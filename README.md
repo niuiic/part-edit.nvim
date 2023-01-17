@@ -24,21 +24,19 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 ```lua
 -- default config
-{
-    win = {
-        -- The percentage of the floating window width to the editor width
-        width_ratio = 1,
-        -- The percentage of the floating window height to the editor height
-        height_ratio = 1,
-    },
-    -- default filetype of selected code
-    -- this plugin will ask you to input filetype if no default filetype specified
-    default_filetype = nil,
-    -- path to the swap file of the new buffer
+	win = {
+		-- The percentage of the floating window width to the editor width
+		width_ratio = 1,
+		-- The percentage of the floating window height to the editor height
+		height_ratio = 1,
+	},
+	-- path to the swap file of the new buffer
 	swap_path = function()
 		return ".swap"
 	end,
-}
+	-- default file suffix of selected code (for example, markdown code -> input `md`)
+	-- this plugin will ask you to input file suffix if no default file suffix specified
+	default_file_suffix = nil,
 ```
 
 ```lua
