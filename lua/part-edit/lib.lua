@@ -64,7 +64,7 @@ local get_selected_area_pos = function()
 	}
 end
 
-local close_peek_buf = function(bufnr)
+local close_buf = function(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr or 0, 0, -1, false)
 	vim.api.nvim_buf_delete(bufnr or 0, { force = true })
 	return lines
@@ -73,8 +73,8 @@ end
 return {
 	open_float_win = open_float_win,
 	is_float_win_open = is_float_win_open,
-	close_peek_buf = close_peek_buf,
 	create_buf = create_buf,
+	close_buf = close_buf,
 	get_visual_selection = get_visual_selection,
 	get_selected_area_pos = get_selected_area_pos,
 }

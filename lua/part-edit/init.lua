@@ -1,11 +1,11 @@
-local lib = require("peek.lib")
-local config = require("peek.static").config
+local lib = require("part-edit.lib")
+local config = require("part-edit.static").config
 
 local curbufnr, s_start, s_end
 
-local peek = function()
+local part_edit = function()
 	if lib.is_float_win_open() and curbufnr ~= nil then
-		local lines = lib.close_peek_buf()
+		local lines = lib.close_buf()
 		vim.api.nvim_buf_set_lines(curbufnr, s_start.row - 1, s_end.row, false, lines)
 		curbufnr = nil
 		return
@@ -41,6 +41,6 @@ local setup = function(new_config)
 end
 
 return {
-	peek = peek,
+	part_edit = part_edit,
 	setup = setup,
 }
