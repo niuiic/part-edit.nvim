@@ -1,6 +1,6 @@
 # part-edit.nvim
 
-Select parts of a file for individual editing.
+Edit a part of a file individually.
 
 ## Usage
 
@@ -13,6 +13,8 @@ For example, if you enable `dotls` in markdown file, you will get these errors.
 To avoid the errors above, the plugin creates a new buffer for editing selected code.
 
 <img src="https://github.com/niuiic/assets/blob/main/part-edit.nvim/usage.gif" />
+
+Notice: you have to use `PartEdit` to exit.
 
 ## Config
 
