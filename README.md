@@ -14,22 +14,26 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 <img src="https://github.com/niuiic/assets/blob/main/part-edit.nvim/usage.gif" />
 
-Notice: you have to use `PartEdit` to exit.
+1. select code in virtual mode
+2. use `PartEdit` to create new buffer
+3. use `PartEdit` to exit
+
+> Notice: you have to use `PartEdit` to exit.
 
 ## Config
 
 ```lua
 -- default config
 {
-	win = {
+    win = {
         -- The percentage of the floating window width to the editor width
-		width_ratio = 1,
+        width_ratio = 1,
         -- The percentage of the floating window height to the editor height
-		height_ratio = 1,
-	},
+        height_ratio = 1,
+    },
     -- default filetype of selected code
     -- this plugin will ask you to input filetype if no default filetype specified
-	default_filetype = nil,
+    default_filetype = nil,
 }
 ```
 
