@@ -34,6 +34,10 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
     -- default filetype of selected code
     -- this plugin will ask you to input filetype if no default filetype specified
     default_filetype = nil,
+    -- path to the swap file of the new buffer
+	swap_path = function()
+		return ".swap"
+	end,
 }
 ```
 

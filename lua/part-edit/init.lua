@@ -7,6 +7,7 @@ local part_edit = function()
 	if lib.is_float_win_open() and curbufnr ~= nil then
 		local lines = lib.close_buf()
 		vim.api.nvim_buf_set_lines(curbufnr, s_start.row - 1, s_end.row, false, lines)
+		lib.remove_file()
 		curbufnr = nil
 		return
 	end
@@ -18,8 +19,10 @@ local part_edit = function()
 		s_end = pos.s_end
 
 		local text = lib.get_visual_selection()
+		lib.create_file(config.swap_path(), text)
 		local bufnr = lib.create_buf()
 		vim.api.nvim_buf_set_lines(bufnr, 0, #text - 1, false, text)
+		vim.api.nvim_buf_set_name(bufnr, config.swap_path())
 		lib.open_float_win(bufnr, config.win.width_ratio, config.win.height_ratio)
 		vim.bo.filetype = filetype
 	end

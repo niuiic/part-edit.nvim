@@ -70,6 +70,17 @@ local close_buf = function(bufnr)
 	return lines
 end
 
+local file_path
+
+local create_file = function(path, content)
+	file_path = path
+	io.open(path, "w")
+end
+
+local remove_file = function()
+	os.remove(file_path)
+end
+
 return {
 	open_float_win = open_float_win,
 	is_float_win_open = is_float_win_open,
@@ -77,4 +88,6 @@ return {
 	close_buf = close_buf,
 	get_visual_selection = get_visual_selection,
 	get_selected_area_pos = get_selected_area_pos,
+	create_file = create_file,
+	remove_file = remove_file,
 }
