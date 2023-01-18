@@ -16,9 +16,7 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 1. select code in virtual mode
 2. use `PartEdit` to create new buffer
-3. use `PartEdit` to exit
-
-> Notice: you have to use `PartEdit` to exit.
+3. save new buffer and the original file will also be updated.
 
 ## Config
 
@@ -38,12 +36,13 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 	-- default file suffix of selected code (for example, markdown code -> md)t
 	-- this plugin will ask you to input file suffix if no default file suffix specified
 	default_file_suffix = nil,
+    -- whether to save original file when update
+	save_original_file = true,
 }
 ```
 
 ```lua
 -- keymap example
-vim.keymap.set("n", "<space>p", "<cmd>PartEdit<CR>", {})
 -- <c-u> is required
 vim.keymap.set("v", "<space>p", ":<c-u>PartEdit<CR>", { silent = true, mode = "v"})
 ```

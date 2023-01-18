@@ -7,6 +7,7 @@ local config = {
 		return ".swap"
 	end,
 	default_file_suffix = nil,
+	save_original_file = true,
 }
 
 return {

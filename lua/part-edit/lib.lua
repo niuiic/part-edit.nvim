@@ -1,12 +1,3 @@
-local winnr
-
-local is_float_win_open = function()
-	if winnr then
-		return vim.api.nvim_win_is_valid(winnr)
-	end
-	return false
-end
-
 local get_win_config = function(width_ratio, height_ratio)
 	local cur_win_zindex = vim.api.nvim_win_get_config(0).zindex or 1
 	local screen_w = vim.opt.columns:get()
@@ -29,11 +20,9 @@ local get_win_config = function(width_ratio, height_ratio)
 end
 
 local open_float_win = function(bufnr, width_ratio, height_ratio)
-	if is_float_win_open() then
-		return
-	end
 	local win_config = get_win_config(width_ratio or 1, height_ratio or 1)
-	winnr = vim.api.nvim_open_win(bufnr, true, win_config)
+	local winnr = vim.api.nvim_open_win(bufnr, true, win_config)
+	return winnr
 end
 
 local create_buf = function()
@@ -64,28 +53,26 @@ local get_selected_area_pos = function()
 	}
 end
 
-local close_buf = function(bufnr)
+local get_buf_content = function(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr or 0, 0, -1, false)
-	vim.api.nvim_buf_delete(bufnr or 0, { force = true })
 	return lines
 end
 
-local file_path
-
-local create_file = function(path, content)
-	file_path = path
-	io.open(path, "w")
+local create_file = function(path)
+	local file = io.open(path, "w")
+	if file ~= nil then
+		file:close()
+	end
 end
 
-local remove_file = function()
-	os.remove(file_path)
+local remove_file = function(path)
+	os.remove(path)
 end
 
 return {
 	open_float_win = open_float_win,
-	is_float_win_open = is_float_win_open,
 	create_buf = create_buf,
-	close_buf = close_buf,
+	get_buf_content = get_buf_content,
 	get_visual_selection = get_visual_selection,
 	get_selected_area_pos = get_selected_area_pos,
 	create_file = create_file,
