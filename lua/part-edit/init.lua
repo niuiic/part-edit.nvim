@@ -81,21 +81,17 @@ local part_edit = function()
 		s_end = pos.s_end
 
 		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
-		lib.create_file(swap_file_path)
-
-		local text = lib.get_visual_selection()
+		local lines = lib.get_visual_selection()
+		lib.create_file(swap_file_path, table.concat(lines, "\n"))
 
 		if config.open_in == "float" then
 			target_bufnr = lib.create_buf()
 			lib.open_float_win(target_bufnr, config.float.win.width_ratio, config.float.win.height_ratio)
+			vim.cmd("e")
 		else
 			vim.cmd("tabf " .. swap_file_path)
 			target_bufnr = vim.api.nvim_win_get_buf(0)
 		end
-
-		vim.api.nvim_buf_set_lines(target_bufnr, 0, #text - 1, false, text)
-		vim.api.nvim_buf_set_name(target_bufnr, swap_file_path)
-		vim.cmd("filetype detect")
 	end
 
 	if config.default_file_suffix ~= nil then

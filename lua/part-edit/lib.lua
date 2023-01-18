@@ -58,9 +58,10 @@ local get_buf_content = function(bufnr)
 	return lines
 end
 
-local create_file = function(path)
-	local file = io.open(path, "w")
+local create_file = function(path, text)
+	local file = io.open(path, "w+")
 	if file ~= nil then
+		file:write(text)
 		file:close()
 	end
 end
