@@ -45,7 +45,7 @@ local create_autocmd = function()
 	local id2 = vim.api.nvim_create_autocmd("BufLeave", {
 		pattern = "*",
 		callback = function(args)
-			if target_bufnr == args.buf then
+			if config.delete_buf_on_leave and target_bufnr == args.buf then
 				pcall(vim.api.nvim_buf_delete, target_bufnr, { force = true })
 				clean_up()
 			end
@@ -83,11 +83,18 @@ local part_edit = function()
 		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
 		lib.create_file(swap_file_path)
 
-		target_bufnr = lib.create_buf()
 		local text = lib.get_visual_selection()
+
+		if config.open_in == "float" then
+			target_bufnr = lib.create_buf()
+			lib.open_float_win(target_bufnr, config.float.win.width_ratio, config.float.win.height_ratio)
+		else
+			vim.cmd("tabf " .. swap_file_path)
+			target_bufnr = vim.api.nvim_win_get_buf(0)
+		end
+
 		vim.api.nvim_buf_set_lines(target_bufnr, 0, #text - 1, false, text)
 		vim.api.nvim_buf_set_name(target_bufnr, swap_file_path)
-		lib.open_float_win(target_bufnr, config.win.width_ratio, config.win.height_ratio)
 		vim.cmd("filetype detect")
 	end
 

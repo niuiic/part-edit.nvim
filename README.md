@@ -23,21 +23,28 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 ```lua
 -- default config
 {
-	win = {
-		-- the percentage of the floating window width to the editor width
-		width_ratio = 1,
-		-- the percentage of the floating window height to the editor height
-		height_ratio = 1,
-	},
-	-- path to the swap file of the new buffer
-	swap_path = function()
-		return ".swap"
-	end,
-	-- default file suffix of selected code (for example, markdown code -> md)t
-	-- this plugin will ask you to input file suffix if no default file suffix specified
-	default_file_suffix = nil,
+    -- float | tab
+    open_in = "tab",
+    float = {
+        win = {
+            -- the ratio of the floating window width to the editor width
+            width_ratio = 1,
+            -- the ratio of the floating window height to the editor height
+            height_ratio = 1,
+        },
+    },
+    -- whether to delete the buffer when leave
+    -- notice: you have to delete previous buffer before you run 'PartEdit' again
+    delete_buf_on_leave = false,
+    -- path to the swap file of the new buffer
+    swap_path = function()
+        return ".swap"
+    end,
+    -- default file suffix of selected code (for example, markdown code -> md)t
+    -- this plugin will ask you to input file suffix if no default file suffix specified
+    default_file_suffix = nil,
     -- whether to save original file when update
-	save_original_file = true,
+    save_original_file = true,
 }
 ```
 
