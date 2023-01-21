@@ -40,7 +40,7 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
     swap_path = function()
         return ".swap"
     end,
-    -- default file suffix of selected code (for example, markdown code -> md)t
+    -- default file suffix of selected code (for example, markdown code -> md)
     -- this plugin will ask you to input file suffix if no default file suffix specified
     default_file_suffix = nil,
     -- whether to save original file when update
