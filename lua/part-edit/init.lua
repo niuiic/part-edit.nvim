@@ -45,7 +45,6 @@ local create_autocmd = function()
 	local id2 = vim.api.nvim_create_autocmd("BufLeave", {
 		pattern = "*",
 		callback = function(args)
-			print(target_bufnr, args.buf)
 			if config.delete_buf_on_leave and target_bufnr == args.buf then
 				pcall(vim.api.nvim_buf_delete, target_bufnr, { force = true })
 				clean_up()
