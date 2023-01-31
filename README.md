@@ -20,7 +20,7 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 ## Dependencies
 
-- [niuiic/part-edit.nvim](https://github.com/niuiic/part-edit.nvim)
+- [niuiic/niuiic-core.nvim](https://github.com/niuiic/niuiic-core.nvim)
 
 ## Config
 
