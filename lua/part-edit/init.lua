@@ -45,6 +45,7 @@ local create_autocmd = function()
 	local id2 = vim.api.nvim_create_autocmd("BufLeave", {
 		pattern = "*",
 		callback = function(args)
+			print(target_bufnr, args.buf)
 			if config.delete_buf_on_leave and target_bufnr == args.buf then
 				pcall(vim.api.nvim_buf_delete, target_bufnr, { force = true })
 				clean_up()
@@ -85,13 +86,12 @@ local part_edit = function()
 		lib.create_file(swap_file_path, table.concat(lines, "\n"))
 
 		if config.open_in == "float" then
-			target_bufnr = lib.create_buf()
-			lib.open_float_win(target_bufnr, config.float.win.width_ratio, config.float.win.height_ratio)
-			vim.cmd("e")
+			lib.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)
+			vim.cmd("e " .. swap_file_path)
 		else
 			vim.cmd("tabf " .. swap_file_path)
-			target_bufnr = vim.api.nvim_win_get_buf(0)
 		end
+		target_bufnr = vim.api.nvim_win_get_buf(0)
 	end
 
 	if config.default_file_suffix ~= nil then

@@ -18,6 +18,10 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 2. use `PartEdit` to create new buffer
 3. save new buffer and the original file will also be updated.
 
+## Dependencies
+
+- [niuiic/part-edit.nvim](https://github.com/niuiic/part-edit.nvim)
+
 ## Config
 
 ```lua
