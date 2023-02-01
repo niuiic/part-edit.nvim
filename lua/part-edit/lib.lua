@@ -14,7 +14,7 @@ local open_float_win = function(bufnr, width_ratio, height_ratio)
 end
 
 local get_visual_selection = function()
-	return core.text.selection(true)
+	return core.text.selection()
 end
 
 local get_selected_area_pos = function()

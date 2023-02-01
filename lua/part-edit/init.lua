@@ -1,7 +1,7 @@
 local lib = require("part-edit.lib")
 local config = require("part-edit.static").config
 
-local original_bufnr, s_start, s_end, target_bufnr, autocmd_ids, swap_file_path
+local original_bufnr, s_start, s_end, target_bufnr, autocmd_ids, swap_file_path, first_line, last_line
 
 local is_buf_open = function()
 	return original_bufnr ~= nil
@@ -31,6 +31,14 @@ local create_autocmd = function()
 		callback = function(args)
 			if target_bufnr == args.buf then
 				local lines = lib.get_buf_content()
+				local before_start = string.sub(first_line, 0, s_start.col - 1)
+				local after_end = string.sub(last_line, s_end.col + 1)
+				if #lines == 1 then
+					lines[1] = string.format("%s%s%s", before_start, lines[1], after_end)
+				else
+					lines[1] = string.format("%s%s", before_start, lines[1])
+					lines[#lines] = string.format("%s%s", lines[#lines], after_end)
+				end
 				vim.api.nvim_buf_set_lines(original_bufnr, s_start.row - 1, s_end.row, false, lines)
 				s_end.row = s_start.row + #lines - 1
 				if config.save_original_file then
@@ -79,6 +87,8 @@ local part_edit = function()
 		local pos = lib.get_selected_area_pos()
 		s_start = pos.s_start
 		s_end = pos.s_end
+		first_line = vim.api.nvim_buf_get_lines(original_bufnr, s_start.row - 1, s_start.row, false)[1]
+		last_line = vim.api.nvim_buf_get_lines(original_bufnr, s_end.row - 1, s_end.row, false)[1]
 
 		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
 		local lines = lib.get_visual_selection()
