@@ -17,15 +17,6 @@ local get_visual_selection = function()
 	return core.text.selection()
 end
 
-local get_selected_area_pos = function()
-	local s_start = vim.fn.getpos("'<")
-	local s_end = vim.fn.getpos("'>")
-	return {
-		s_start = { row = s_start[2], col = s_start[3] },
-		s_end = { row = s_end[2], col = s_end[3] },
-	}
-end
-
 local get_buf_content = function(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr or 0, 0, -1, false)
 	return lines

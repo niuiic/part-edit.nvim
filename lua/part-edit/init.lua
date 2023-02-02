@@ -1,5 +1,6 @@
 local lib = require("part-edit.lib")
 local config = require("part-edit.static").config
+local core = require("niuiic-core")
 
 local original_bufnr, s_start, s_end, target_bufnr, autocmd_ids, swap_file_path, before_start, after_end
 
@@ -87,17 +88,14 @@ local part_edit = function()
 		local lines = lib.get_visual_selection()
 		lib.create_file(swap_file_path, table.concat(lines, "\n"))
 
-		local pos = lib.get_selected_area_pos()
+		local pos = core.text.selected_area(original_bufnr)
 		s_start = pos.s_start
 		s_end = pos.s_end
 
 		local first_line = vim.api.nvim_buf_get_lines(original_bufnr, s_start.row - 1, s_start.row, false)[1]
 		local last_line = vim.api.nvim_buf_get_lines(original_bufnr, s_end.row - 1, s_end.row, false)[1]
-		before_start = string.sub(first_line, 0, string.find(first_line, lines[1], 1, true) - 1)
-		after_end = string.sub(
-			last_line,
-			string.find(last_line, lines[#lines], 1, true) + vim.fn.strdisplaywidth(lines[#lines])
-		)
+		before_start = string.sub(first_line, 0, s_start.col - 1)
+		after_end = string.sub(last_line, s_end.col + 1)
 
 		if config.open_in == "float" then
 			lib.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)
