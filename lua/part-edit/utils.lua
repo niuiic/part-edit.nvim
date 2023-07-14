@@ -13,10 +13,6 @@ local open_float_win = function(bufnr, width_ratio, height_ratio)
 	})
 end
 
-local get_visual_selection = function()
-	return core.text.selection()
-end
-
 local get_buf_content = function(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr or 0, 0, -1, false)
 	return lines
@@ -37,8 +33,6 @@ end
 return {
 	open_float_win = open_float_win,
 	get_buf_content = get_buf_content,
-	get_visual_selection = get_visual_selection,
-	get_selected_area_pos = get_selected_area_pos,
 	create_file = create_file,
 	remove_file = remove_file,
 }

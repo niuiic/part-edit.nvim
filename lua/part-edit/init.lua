@@ -1,4 +1,4 @@
-local lib = require("part-edit.lib")
+local utils = require("part-edit.utils")
 local config = require("part-edit.static").config
 local core = require("core")
 
@@ -16,7 +16,7 @@ local delete_autocmd = function()
 end
 
 local clean_up = function()
-	lib.remove_file(swap_file_path)
+	utils.remove_file(swap_file_path)
 	delete_autocmd()
 	original_bufnr = nil
 	s_start = nil
@@ -31,7 +31,7 @@ local create_autocmd = function()
 		pattern = "*",
 		callback = function(args)
 			if target_bufnr == args.buf then
-				local lines = lib.get_buf_content()
+				local lines = utils.get_buf_content()
 				if #lines == 1 then
 					lines[1] = string.format("%s%s%s", before_start, lines[1], after_end)
 				else
@@ -81,12 +81,17 @@ local part_edit = function()
 		return
 	end
 
+	if vim.fn.mode() ~= "v" then
+		vim.notify([[only support "v" mode]], vim.log.levels.ERROR)
+		return
+	end
+
 	local function open_win(file_suffix)
 		original_bufnr = vim.api.nvim_win_get_buf(0)
 
 		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
-		local lines = lib.get_visual_selection()
-		lib.create_file(swap_file_path, table.concat(lines, "\n"))
+		local lines = core.lua.string.split(core.text.selection(), "\n")
+		utils.create_file(swap_file_path, table.concat(lines, "\n"))
 
 		local pos = core.text.selected_area(original_bufnr)
 		s_start = pos.s_start
@@ -98,7 +103,7 @@ local part_edit = function()
 		after_end = string.sub(last_line, s_end.col + 1)
 
 		if config.open_in == "float" then
-			lib.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)
+			utils.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)
 			vim.cmd("e " .. swap_file_path)
 		else
 			vim.cmd("tabf " .. swap_file_path)

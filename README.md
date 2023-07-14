@@ -14,7 +14,7 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 <img src="https://github.com/niuiic/assets/blob/main/part-edit.nvim/usage.gif" />
 
-1. select code in virtual mode
+1. select code in virtual mode (only support "v" mode)
 2. use `PartEdit` to create new buffer
 3. save new buffer and the original file will also be updated.
 
@@ -54,6 +54,5 @@ To avoid the errors above, the plugin creates a new buffer for editing selected 
 
 ```lua
 -- keymap example
--- <c-u> is required
-vim.keymap.set("v", "<space>p", ":<c-u>PartEdit<CR>", { silent = true, mode = "v"})
+vim.keymap.set("v", "<space>p", "<cmd>PartEdit<CR>", { silent = true, mode = "v"})
 ```
