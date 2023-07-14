@@ -1,4 +1,4 @@
-local core = require("niuiic-core")
+local core = require("core")
 
 local open_float_win = function(bufnr, width_ratio, height_ratio)
 	local proportional_size = core.win.proportional_size(width_ratio, height_ratio)

@@ -1,6 +1,6 @@
 local lib = require("part-edit.lib")
 local config = require("part-edit.static").config
-local core = require("niuiic-core")
+local core = require("core")
 
 local original_bufnr, s_start, s_end, target_bufnr, autocmd_ids, swap_file_path, before_start, after_end
 
