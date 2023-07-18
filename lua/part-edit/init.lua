@@ -77,23 +77,26 @@ end
 
 local part_edit = function()
 	if is_buf_open() then
-		vim.notify("previous editing is not finished", vim.log.levels.ERROR)
+		vim.notify("previous editing is not finished", vim.log.levels.ERROR, {
+			title = "Part Edit",
+		})
 		return
 	end
 
 	if vim.fn.mode() ~= "v" then
-		vim.notify([[only support "v" mode]], vim.log.levels.ERROR)
+		vim.notify([[only support "v" mode]], vim.log.levels.ERROR, {
+			title = "Part Edit",
+		})
 		return
 	end
 
-	local function open_win(file_suffix)
+	local open_win = function(file_suffix)
 		original_bufnr = vim.api.nvim_win_get_buf(0)
 
-		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
-		local lines = core.lua.string.split(core.text.selection(), "\n")
-		utils.create_file(swap_file_path, table.concat(lines, "\n"))
-
 		local pos = core.text.selected_area(original_bufnr)
+		if not pos then
+			return
+		end
 		s_start = pos.s_start
 		s_end = pos.s_end
 
@@ -101,6 +104,10 @@ local part_edit = function()
 		local last_line = vim.api.nvim_buf_get_lines(original_bufnr, s_end.row - 1, s_end.row, false)[1]
 		before_start = string.sub(first_line, 0, s_start.col - 1)
 		after_end = string.sub(last_line, s_end.col + 1)
+
+		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
+		local lines = core.lua.string.split(core.text.selection(), "\n")
+		utils.create_file(swap_file_path, table.concat(lines, "\n"))
 
 		if config.open_in == "float" then
 			utils.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)

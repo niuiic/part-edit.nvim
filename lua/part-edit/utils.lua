@@ -27,7 +27,7 @@ local create_file = function(path, text)
 end
 
 local remove_file = function(path)
-	os.remove(path)
+	vim.loop.fs_unlink(path)
 end
 
 return {
