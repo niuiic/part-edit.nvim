@@ -2,6 +2,8 @@
 
 Edit a part of a file individually.
 
+[More neovim plugins](https://github.com/niuiic/awesome-neovim-plugins)
+
 ## Usage
 
 This plugin is designed mostly for editing code in markdown file.
