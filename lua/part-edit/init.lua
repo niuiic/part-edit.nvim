@@ -99,6 +99,7 @@ M.start = omega.async(function()
 			parsed_lines[1] = before_start .. parsed_lines[1]
 			parsed_lines[#parsed_lines] = parsed_lines[#parsed_lines] .. after_end
 			vim.api.nvim_buf_set_lines(bufnr, selected_area.start_lnum - 1, selected_area.end_lnum, false, parsed_lines)
+			selected_area.end_lnum = selected_area.start_lnum + #parsed_lines - 1
 			if config:get().save_original_file then
 				vim.api.nvim_set_current_buf(bufnr)
 				vim.cmd("w")
