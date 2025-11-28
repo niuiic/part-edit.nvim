@@ -20,6 +20,8 @@ function Config:get()
 	return self._config
 end
 
-local default_config = {}
+local default_config = {
+	save_original_file = true,
+}
 
 return Config:new(default_config)

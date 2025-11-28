@@ -1,141 +1,137 @@
-local utils = require("part-edit.utils")
-local config = require("part-edit.static").config
-local core = require("core")
+local config = require("part-edit.config")
+local omega = require("omega")
 
-local original_bufnr, s_start, s_end, target_bufnr, autocmd_ids, swap_file_path, before_start, after_end
+local M = {}
 
-local is_buf_open = function()
-	return original_bufnr ~= nil
+-- % setup %
+function M.setup(new_config)
+	config:set(new_config)
 end
 
-local delete_autocmd = function()
-	for _, value in ipairs(autocmd_ids) do
-		vim.api.nvim_del_autocmd(value)
+-- % strategy %
+---@class PartEditStrategy
+---@field name string
+---@field from (fun(lines: string[]): string[]) | nil
+---@field to (fun(lines: string[]): string[]) | nil
+---@field file_suffix string
+
+local strategies = {}
+
+---@type fun(strategy: PartEditStrategy)
+function M.add_strategy(strategy)
+	strategy.from = strategy.from or function(lines)
+		return lines
 	end
-	autocmd_ids = {}
+
+	strategy.to = strategy.to or function(lines)
+		return lines
+	end
+
+	strategies[strategy.name] = strategy
 end
 
-local clean_up = function()
-	utils.remove_file(swap_file_path)
-	delete_autocmd()
-	original_bufnr = nil
-	s_start = nil
-	s_end = nil
-	target_bufnr = nil
-	autocmd_ids = nil
-	swap_file_path = nil
-end
+---@type fun(cb: fun(strategy: PartEditStrategy | nil))
+function M._select_strategy(cb)
+	local items = vim.tbl_keys(strategies)
 
-local create_autocmd = function()
-	local id1 = vim.api.nvim_create_autocmd("BufWritePost", {
-		pattern = "*",
-		callback = function(args)
-			if target_bufnr == args.buf then
-				local lines = utils.get_buf_content()
-				if #lines == 1 then
-					lines[1] = string.format("%s%s%s", before_start, lines[1], after_end)
-				else
-					lines[1] = string.format("%s%s", before_start, lines[1])
-					lines[#lines] = string.format("%s%s", lines[#lines], after_end)
-				end
-				vim.api.nvim_buf_set_lines(original_bufnr, s_start.row - 1, s_end.row, false, lines)
-				s_end.row = s_start.row + #lines - 1
-				if config.save_original_file then
-					vim.api.nvim_set_current_buf(original_bufnr)
-					vim.cmd("w")
-					vim.api.nvim_set_current_buf(target_bufnr)
-				end
-			end
-		end,
-	})
-
-	local id2 = vim.api.nvim_create_autocmd("BufLeave", {
-		pattern = "*",
-		callback = function(args)
-			if config.delete_buf_on_leave and target_bufnr == args.buf then
-				pcall(vim.api.nvim_buf_delete, target_bufnr, { force = true })
-				clean_up()
-			end
-		end,
-	})
-
-	local id3 = vim.api.nvim_create_autocmd("BufDelete", {
-		pattern = "*",
-		callback = function(args)
-			if target_bufnr == args.buf then
-				clean_up()
-			end
-		end,
-	})
-
-	autocmd_ids = {
-		id1,
-		id2,
-		id3,
-	}
-end
-
-local part_edit = function()
-	if is_buf_open() then
-		vim.notify("previous editing is not finished", vim.log.levels.ERROR, {
-			title = "Part Edit",
-		})
+	if #items == 1 then
+		cb(strategies[items[1]])
 		return
 	end
 
-	if vim.fn.mode() ~= "v" then
-		vim.notify([[only support "v" mode]], vim.log.levels.ERROR, {
-			title = "Part Edit",
-		})
-		return
-	end
-
-	local open_win = function(file_suffix)
-		original_bufnr = vim.api.nvim_win_get_buf(0)
-
-		local pos = core.text.selected_area(original_bufnr)
-		if not pos then
-			return
-		end
-		s_start = pos.s_start
-		s_end = pos.s_end
-
-		local first_line = vim.api.nvim_buf_get_lines(original_bufnr, s_start.row - 1, s_start.row, false)[1]
-		local last_line = vim.api.nvim_buf_get_lines(original_bufnr, s_end.row - 1, s_end.row, false)[1]
-		before_start = string.sub(first_line, 0, s_start.col - 1)
-		after_end = string.sub(last_line, s_end.col + 1)
-
-		swap_file_path = string.format("%s%s%s", config.swap_path(), ".", file_suffix)
-		local lines = core.lua.string.split(core.text.selection(), "\n")
-		utils.create_file(swap_file_path, table.concat(lines, "\n"))
-
-		if config.open_in == "float" then
-			utils.open_float_win(0, config.float.win.width_ratio, config.float.win.height_ratio)
-			vim.cmd("e " .. swap_file_path)
+	vim.ui.select(items, {
+		prompt = "Select strategy",
+	}, function(selected)
+		if not selected then
+			cb()
 		else
-			vim.cmd("tabf " .. swap_file_path)
+			cb(strategies[selected])
 		end
-		target_bufnr = vim.api.nvim_win_get_buf(0)
+	end)
+end
+
+-- % start %
+M.start = omega.async(function()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local mode = vim.fn.mode()
+	if mode ~= "v" and mode ~= "V" then
+		vim.notify('only support "v" or "V" mode', vim.log.levels.WARN, { title = "Part Edit" })
+		return
 	end
 
-	if config.default_file_suffix ~= nil then
-		open_win(config.default_file_suffix)
-	else
-		vim.ui.input({ prompt = "File suffix: " }, function(input)
-			if input == nil then
-				return
+	local selected_area = omega.get_selected_area()
+	local selected = omega.get_selection()
+	if not selected then
+		vim.notify("no selection", vim.log.levels.WARN, { title = "Part Edit" })
+		return
+	end
+	local before_start = M._get_before_start(bufnr, selected_area.start_lnum, selected[1])
+	local after_end = M._get_after_end(bufnr, selected_area.end_lnum, selected[#selected])
+
+	local strategy = omega.await(M._select_strategy)
+	if not strategy then
+		return
+	end
+
+	local file_name = M._get_file_name(strategy.file_suffix)
+	vim.fn.writefile(strategy.from(selected), file_name)
+	vim.cmd("e " .. file_name)
+	local new_bufnr = vim.api.nvim_get_current_buf()
+
+	vim.api.nvim_create_autocmd("VimLeave", {
+		callback = function()
+			M._clean_up(new_bufnr, file_name)
+		end,
+	})
+
+	vim.api.nvim_create_autocmd("BufDelete", {
+		buffer = new_bufnr,
+		callback = function()
+			M._clean_up(new_bufnr, file_name)
+		end,
+	})
+
+	vim.api.nvim_create_autocmd("BufWritePost", {
+		buffer = new_bufnr,
+		callback = function()
+			local lines = vim.api.nvim_buf_get_lines(new_bufnr, 0, -1, false)
+			local parsed_lines = strategy.to(lines)
+			parsed_lines[1] = before_start .. parsed_lines[1]
+			parsed_lines[#parsed_lines] = parsed_lines[#parsed_lines] .. after_end
+			vim.api.nvim_buf_set_lines(bufnr, selected_area.start_lnum - 1, selected_area.end_lnum, false, parsed_lines)
+			if config:get().save_original_file then
+				vim.api.nvim_set_current_buf(bufnr)
+				vim.cmd("w")
+				vim.api.nvim_set_current_buf(new_bufnr)
 			end
-			open_win(input)
-		end)
+		end,
+	})
+end)
+
+---@type fun(bufnr: number, start_lnum: number, first_selected: string): string
+function M._get_before_start(bufnr, start_lnum, first_selected)
+	local line = vim.api.nvim_buf_get_lines(bufnr, start_lnum - 1, start_lnum, false)[1]
+	return string.sub(line, 1, string.len(line) - string.len(first_selected))
+end
+
+---@type fun(bufnr: number, end_lnum: number, last_selected: string): string
+function M._get_after_end(bufnr, end_lnum, last_selected)
+	local line = vim.api.nvim_buf_get_lines(bufnr, end_lnum - 1, end_lnum, false)[1]
+	return string.sub(line, string.len(last_selected) + 1)
+end
+
+function M._get_file_name(suffix)
+	local cur_file = vim.api.nvim_buf_get_name(0)
+	return vim.fs.joinpath(vim.fs.dirname(cur_file), string.format("__%s.%s", os.time(), suffix))
+end
+
+function M._clean_up(bufnr, file_name)
+	if vim.api.nvim_buf_is_valid(bufnr) then
+		vim.api.nvim_buf_delete(bufnr, { force = true })
 	end
-	create_autocmd()
+	if vim.uv.fs_stat(file_name) then
+		vim.uv.fs_unlink(file_name)
+	end
 end
 
-local setup = function(new_config)
-	config = vim.tbl_deep_extend("force", config, new_config or {})
-end
-
-return {
-	part_edit = part_edit,
-	setup = setup,
-}
+return M
