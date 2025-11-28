@@ -52,6 +52,7 @@ end
 
 -- % start %
 M.start = omega.async(function()
+	-- %% mode %%
 	local bufnr = vim.api.nvim_get_current_buf()
 	local mode = vim.fn.mode()
 	if mode ~= "v" and mode ~= "V" then
@@ -59,6 +60,7 @@ M.start = omega.async(function()
 		return
 	end
 
+	-- %% selected %%
 	local selected_area = omega.get_selected_area()
 	local selected = omega.get_selection()
 	if not selected then
@@ -68,11 +70,13 @@ M.start = omega.async(function()
 	local before_start = M._get_before_start(bufnr, selected_area.start_lnum, selected[1])
 	local after_end = M._get_after_end(bufnr, selected_area.end_lnum, selected[#selected])
 
+	-- %% select strategy %%
 	local strategy = omega.await(M._select_strategy)
 	if not strategy then
 		return
 	end
 
+	-- %% create buffer %%
 	local file_name = M._get_file_name(strategy.file_suffix)
 	vim.fn.writefile(strategy.from(selected), file_name)
 	vim.cmd("e " .. file_name)
@@ -91,6 +95,7 @@ M.start = omega.async(function()
 		end,
 	})
 
+	-- %% write back %%
 	vim.api.nvim_create_autocmd("BufWritePost", {
 		buffer = new_bufnr,
 		callback = function()
@@ -98,8 +103,11 @@ M.start = omega.async(function()
 			local parsed_lines = strategy.to(lines)
 			parsed_lines[1] = before_start .. parsed_lines[1]
 			parsed_lines[#parsed_lines] = parsed_lines[#parsed_lines] .. after_end
+
 			vim.api.nvim_buf_set_lines(bufnr, selected_area.start_lnum - 1, selected_area.end_lnum, false, parsed_lines)
+
 			selected_area.end_lnum = selected_area.start_lnum + #parsed_lines - 1
+
 			if config:get().save_original_file then
 				vim.api.nvim_set_current_buf(bufnr)
 				vim.cmd("w")
@@ -127,12 +135,14 @@ function M._get_file_name(suffix)
 end
 
 function M._clean_up(bufnr, file_name)
-	if vim.api.nvim_buf_is_valid(bufnr) then
-		vim.api.nvim_buf_delete(bufnr, { force = true })
-	end
-	if vim.uv.fs_stat(file_name) then
-		vim.uv.fs_unlink(file_name)
-	end
+	vim.schedule(function()
+		if vim.api.nvim_buf_is_valid(bufnr) then
+			vim.api.nvim_buf_delete(bufnr, { force = true })
+		end
+		if vim.uv.fs_stat(file_name) then
+			vim.uv.fs_unlink(file_name)
+		end
+	end)
 end
 
 return M
