@@ -17,8 +17,8 @@ code.
 
 <img src="https://github.com/niuiic/assets/blob/main/part-edit.nvim/usage.gif" />
 
-1. select code in virtual mode (only support "v" mode)
-2. use `PartEdit` to create new buffer
+1. select code in virtual mode (only support "v" or "V" mode)
+2. use `require("part-edit").start()` to create new buffer
 3. save new buffer and the original file will also be updated.
 
 ## Dependencies
