@@ -41,3 +41,32 @@ vim.keymap.set("v", "<space>p", function()
 	require("part-edit").start()
 end, { silent = true, mode = "v" })
 ```
+
+```lua
+-- add a strategy first
+---@class PartEditStrategy
+---@field name string
+---@field from (fun(lines: string[]): string[]) | nil
+---@field to (fun(lines: string[]): string[]) | nil
+---@field file_suffix string
+---@type fun(strategy: PartEditStrategy)
+
+require"part-edit").add_strategy({
+    name = "js lines",
+    from = function(lines)
+        return vim.iter(lines)
+            :map(function(line)
+                return line:match('%"(.*)%"')
+            end)
+            :totable()
+    end,
+    to = function(lines)
+        return vim.iter(lines)
+            :map(function(line)
+                return string.format('"%s",', line)
+            end)
+            :totable()
+    end,
+    file_suffix = "js",
+})
+```
