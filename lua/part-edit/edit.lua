@@ -11,7 +11,9 @@ M.part_edit = omega.async(function()
 	local selected_area, selected, before_start, after_end = require("part-edit.selection").get_selection()
 
 	local strategy = omega.await(require("part-edit.strategy").select_strategy)
-	assert(strategy, "no strategy selected ")
+	if not strategy then
+		return
+	end
 
 	local new_bufnr, file_name = require("part-edit.file").create(strategy.from(selected), strategy.file_suffix)
 
